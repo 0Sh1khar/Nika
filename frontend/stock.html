@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stock Predictor | Dashboard</title>
+  <!-- Google Fonts and Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Materialize CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Chart.js: Loaded in the head so the global Chart is defined -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f5f5;
+    }
+    .navbar-custom {
+      background-color: #1e3c72;
+      padding: 1rem 2rem;
+    }
+    .navbar-custom .brand-logo,
+    .navbar-custom .nav-link {
+      color: #fff;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+    }
+    #stockChart {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .btn-custom {
+      font-size: 1.1rem;
+      padding: 12px 20px;
+      border-radius: 30px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeInUp 0.8s ease-out;
+      animation-fill-mode: forwards;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navbar -->
+  <nav class="nav-wrapper navbar-custom">
+    <div class="container">
+      <a class="brand-logo" href="index.html">Stock Predictor</a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a href="index.html">Home</a></li>
+        <li><a class="active" href="stock.html">Stocks</a></li>
+        <li><a href="news.html">News</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container fade-in" style="padding-top: 2rem;">
+    <h1 class="center-align">Stock Data</h1>
+    <div class="row">
+      <form id="stockForm" class="col s12 m10 offset-m1">
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input id="symbol" type="text" required>
+            <label for="symbol">Stock Symbol (e.g., NFLX)</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <select id="period">
+              <option value="1mo" selected>1 Month</option>
+              <option value="3mo">3 Months</option>
+              <option value="6mo">6 Months</option>
+              <option value="1y">1 Year</option>
+            </select>
+            <label>Select Period</label>
+          </div>
+          <div class="col s12 m2">
+            <button class="btn waves-effect waves-light btn-custom" type="submit">
+              Get Data <i class="material-icons right">search</i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div id="loading" class="center-align" style="display: none;">
+      <div class="preloader-wrapper small active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+      <p>Fetching stock data...</p>
+    </div>
+
+    <div id="stockResult" style="display: block;">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title center-align" id="stockSymbol">Enter a stock symbol to see details</span>
+          <table class="striped">
+            <tbody>
+              <tr><th>Latest Price</th><td id="latestPrice">-</td></tr>
+              <tr><th>Open Price</th><td id="openPrice">-</td></tr>
+              <tr><th>High</th><td id="highPrice">-</td></tr>
+              <tr><th>Low</th><td id="lowPrice">-</td></tr>
+              <tr><th>Volume</th><td id="volume">-</td></tr>
+              <tr><th>Prediction</th><td id="prediction">-</td></tr>
+              <tr><th>Sentiment</th><td id="sentiment">-</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="card">
+      <div class="card-content">
+        <h5 class="center-align">Stock Price Chart</h5>
+        <canvas id="stockChart" height="400"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Materialize JS (placed at the end) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  
+  <!-- Custom JS placed at the end of the body -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Materialize select
+      var elems = document.querySelectorAll('select');
+      M.FormSelect.init(elems);
+      
+      // Debug: Confirm Chart.js is loaded and available
+      console.log("Type of Chart:", typeof Chart);
+      if (typeof Chart !== "function") {
+        console.error("Chart is not defined as a function.");
+        return;
+      }
+      
+      let stockChart; // Global variable for chart instance
+
+      const stockForm = document.getElementById("stockForm");
+      if (!stockForm) {
+        console.error("stockForm element not found!");
+        return;
+      }
+      
+      stockForm.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        
+        const symbol = document.getElementById("symbol").value.trim().toUpperCase();
+        const period = document.getElementById("period").value;
+        const loading = document.getElementById("loading");
+        const resultSection = document.getElementById("stockResult");
+        const stockChartElem = document.getElementById('stockChart');
+        if (!stockChartElem) {
+          console.error("stockChart canvas element not found!");
+          return;
+        }
+        const stockChartCtx = stockChartElem.getContext('2d');
+        
+        if (!symbol) return alert("Please enter a stock symbol.");
+        
+        loading.style.display = "block";
+        const requestData = { symbol: symbol, period: period };
+        console.log("Sending request:", requestData);
+        
+        try {
+          const response = await fetch('/api/stock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+          });
+          const data = await response.json();
+          console.log("Response received:", data);
+          loading.style.display = "none";
+          
+          if (response.ok) {
+            document.getElementById("stockSymbol").textContent = data.symbol || "N/A";
+            document.getElementById("latestPrice").textContent = data.latest_price || "N/A";
+            document.getElementById("openPrice").textContent = data.open_price || "N/A";
+            document.getElementById("highPrice").textContent = data.high || "N/A";
+            document.getElementById("lowPrice").textContent = data.low || "N/A";
+            document.getElementById("volume").textContent = data.volume ? data.volume.toLocaleString() : "N/A";
+            document.getElementById("prediction").textContent = data.prediction || "N/A";
+            document.getElementById("sentiment").textContent = data.sentiment || "N/A";
+            resultSection.style.display = "block";
+            
+            // Build chart data from history
+            const history = data.history;
+            const dates = history.map(record => {
+              const d = new Date(record.Date);
+              return d.toLocaleDateString();
+            });
+            const closePrices = history.map(record => record.Close);
+            
+            // Destroy previous chart if it exists
+            if (stockChart) {
+              stockChart.destroy();
+            }
+            
+            // Create new Chart.js line chart using the global Chart constructor
+            stockChart = new Chart(stockChartCtx, {
+              type: 'line',
+              data: {
+                labels: dates,
+                datasets: [{
+                  label: 'Stock Close Price ($)',
+                  data: closePrices,
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 2,
+                  tension: 0.4,
+                  fill: true
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { position: 'top' },
+                  tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                  x: { title: { display: true, text: 'Date' } },
+                  y: { title: { display: true, text: 'Close Price ($)' }, beginAtZero: false }
+                }
+              }
+            });
+          } else {
+            alert(data.error || "Error fetching stock data.");
+          }
+        } catch (error) {
+          loading.style.display = "none";
+          console.error("Fetch error:", error);
+          alert("Failed to fetch data. Please try again.");
+        }
+      });
+      
+      // Dark mode toggle
+      const toggleDarkModeBtn = document.getElementById("toggleDarkMode");
+      if (toggleDarkModeBtn) {
+        toggleDarkModeBtn.addEventListener("click", function() {
+          document.body.classList.toggle("dark-mode");
+          this.textContent = document.body.classList.contains("dark-mode") ? "Disable Dark Mode" : "Enable Dark Mode";
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nika - Stock Prediction</title>
+  <!-- Google Fonts and Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Materialize CSS (Material Design Framework) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    .container-custom {
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      margin: 50px auto;
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .btn-custom {
+      font-size: 1.2rem;
+      padding: 15px 25px;
+      border-radius: 30px;
+      font-weight: 600;
+      margin: 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
+    }
+    .btn-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      border: none;
+      color: white;
+    }
+    .btn-warning {
+      background: linear-gradient(135deg, #ffcc00, #ff9900);
+      border: none;
+      color: black;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 1rem 0;
+      background: rgba(0,0,0,0.7);
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation (using Materialize Navbar) -->
+  <nav class="nav-wrapper" style="background: rgba(0,0,0,0.5);">
+    <div class="container">
+      <a href="#" class="brand-logo">Nika</a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a href="stock.html">Predict Stocks</a></li>
+        <li><a href="news.html">News & Articles</a></li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <div class="container-custom">
+    <h1 class="center-align">📈 Nika - Stock Prediction</h1>
+    <p class="flow-text">Accurate predictions, latest news, and real-time insights at your fingertips.</p>
+    <div class="center-align">
+      <a href="stock.html" class="waves-effect waves-light btn btn-custom btn-primary">
+        <i class="material-icons left">show_chart</i>Predict Stocks
+      </a>
+      <a href="news.html" class="waves-effect waves-light btn btn-custom btn-warning">
+        <i class="material-icons left">article</i>News & Articles
+      </a>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Nika. All rights reserved.</p>
+    </div>
+  </footer>
+  
+  <!-- Materialize JS (for Navbar functionality) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
